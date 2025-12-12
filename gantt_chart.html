@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Gantt Chart - Dec 2025 to Feb 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .info-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .info-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .info-card p {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .milestones {
+            margin: 30px 0;
+        }
+        
+        .milestone-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .milestone {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .milestone:hover {
+            transform: translateX(5px);
+        }
+        
+        .milestone.pending {
+            border-left-color: #ffc107;
+        }
+        
+        .milestone.critical {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+        
+        .milestone-name {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        
+        .milestone-date {
+            color: #666;
+            font-size: 0.95em;
+        }
+        
+        .milestone-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .status-complete {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-progress {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-pending {
+            background: #e7e7e7;
+            color: #666;
+        }
+        
+        .gantt-section {
+            margin: 40px 0;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .gantt-chart {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        .gantt-header {
+            display: flex;
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+            padding: 15px 0;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .gantt-col-task {
+            width: 300px;
+            padding: 0 15px;
+            flex-shrink: 0;
+        }
+        
+        .gantt-col-assignee {
+            width: 150px;
+            padding: 0 15px;
+            flex-shrink: 0;
+        }
+        
+        .gantt-col-timeline {
+            flex: 1;
+            min-width: 600px;
+            padding: 0 15px;
+        }
+        
+        .gantt-col-status {
+            width: 120px;
+            padding: 0 15px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .gantt-col-progress {
+            width: 100px;
+            padding: 0 15px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .gantt-row {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+            min-height: 60px;
+            transition: background 0.2s;
+        }
+        
+        .gantt-row:hover {
+            background: #f8f9fa;
+        }
+        
+        .gantt-row.phase-header {
+            background: #f0f0f0;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+        
+        .timeline-bar-container {
+            position: relative;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .timeline-bar {
+            position: absolute;
+            height: 100%;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 0.8em;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .bar-complete {
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .bar-progress {
+            background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);
+        }
+        
+        .bar-pending {
+            background: linear-gradient(90deg, #6c757d 0%, #495057 100%);
+        }
+        
+        .progress-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        .progress-high {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .progress-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .progress-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .team-section {
+            margin: 40px 0;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .team-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .team-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .team-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .team-card ul {
+            list-style: none;
+            margin-top: 10px;
+        }
+        
+        .team-card li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .workload {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .workload-high {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .workload-medium {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .workload-low {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .timeline-visual {
+            margin: 30px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .week-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .phase-bar {
+            margin: 15px 0;
+            position: relative;
+        }
+        
+        .phase-label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #667eea;
+        }
+        
+        .phase-timeline {
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            position: relative;
+            overflow: visible;
+        }
+        
+        .phase-fill {
+            height: 100%;
+            border-radius: 5px;
+            position: absolute;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Project Gantt Chart</h1>
+            <p>Timeline: December 8, 2025 - February 14, 2026</p>
+        </div>
+        
+        <div class="content">
+            <!-- Overview Cards -->
+            <div class="overview">
+                <div class="info-card">
+                    <h3>Project Start</h3>
+                    <p>Dec 8, 2025</p>
+                </div>
+                <div class="info-card">
+                    <h3>Proposal Deadline</h3>
+                    <p>Dec 13 @ 23:59</p>
+                </div>
+                <div class="info-card">
+                    <h3>Final Deadline</h3>
+                    <p>Jan 31 @ 23:59</p>
+                </div>
+                <div class="info-card">
+                    <h3>Team Size</h3>
+                    <p>5 Members</p>
+                </div>
+                <div class="info-card">
+                    <h3>Progress</h3>
+                    <p>75% Complete</p>
+                </div>
+                <div class="info-card">
+                    <h3>Presentation</h3>
+                    <p>Feb 7 or 14</p>
+                </div>
+            </div>
+            
+            <!-- Key Milestones -->
+            <section class="milestones">
+                <h2 class="section-title">🎯 Key Milestones</h2>
+                <div class="milestone-grid">
+                    <div class="milestone">
+                        <div>
+                            <div class="milestone-name">Project Start</div>
+                            <div class="milestone-date">December 8, 2025</div>
+                        </div>
+                        <span class="milestone-status status-complete">✅ Complete</span>
+                    </div>
+                    <div class="milestone critical">
+                        <div>
+                            <div class="milestone-name">🔴 Proposal Submission</div>
+                            <div class="milestone-date">December 13, 2025 @ 23:59</div>
+                        </div>
+                        <span class="milestone-status status-progress">⏳ In Progress</span>
+                    </div>
+                    <div class="milestone">
+                        <div>
+                            <div class="milestone-name">Report 75% Complete</div>
+                            <div class="milestone-date">Current Status</div>
+                        </div>
+                        <span class="milestone-status status-complete">✅ Complete</span>
+                    </div>
+                    <div class="milestone critical">
+                        <div>
+                            <div class="milestone-name">🔴 Final Report Submission</div>
+                            <div class="milestone-date">January 31, 2026 @ 23:59</div>
+                        </div>
+                        <span class="milestone-status status-pending">🔄 Pending</span>
+                    </div>
+                    <div class="milestone pending">
+                        <div>
+                            <div class="milestone-name">🔶 Presentation (Option 1)</div>
+                            <div class="milestone-date">February 7, 2026</div>
+                        </div>
+                        <span class="milestone-status status-pending">🔄 TBD</span>
+                    </div>
+                    <div class="milestone pending">
+                        <div>
+                            <div class="milestone-name">🔶 Presentation (Option 2)</div>
+                            <div class="milestone-date">February 14, 2026</div>
+                        </div>
+                        <span class="milestone-status status-pending">🔄 TBD</span>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Visual Timeline -->
+            <section class="timeline-visual">
+                <h2 class="section-title">📈 Project Timeline Overview</h2>
+                <div class="week-labels">
+                    <span>Dec 8</span>
+                    <span>Dec 15</span>
+                    <span>Dec 22</span>
+                    <span>Dec 29</span>
+                    <span>Jan 5</span>
+                    <span>Jan 12</span>
+                    <span>Jan 19</span>
+                    <span>Jan 26</span>
+                    <span>Feb 2</span>
+                    <span>Feb 9</span>
+                </div>
+                
+                <div class="phase-bar">
+                    <div class="phase-label">Phase 1: Proposal (80% Complete)</div>
+                    <div class="phase-timeline">
+                        <div class="phase-fill bar-progress" style="left: 0%; width: 8%;"></div>
+                    </div>
+                </div>
+                
+                <div class="phase-bar">
+                    <div class="phase-label">Phase 2: Research & Development (90% Complete)</div>
+                    <div class="phase-timeline">
+                        <div class="phase-fill bar-complete" style="left: 8%; width: 36%;"></div>
+                    </div>
+                </div>
+                
+                <div class="phase-bar">
+                    <div class="phase-label">Phase 3: Report Writing (75% Complete)</div>
+                    <div class="phase-timeline">
+                        <div class="phase-fill bar-progress" style="left: 16%; width: 50%;"></div>
+                    </div>
+                </div>
+                
+                <div class="phase-bar">
+                    <div class="phase-label">Phase 4: Review & Finalization (0% Complete)</div>
+                    <div class="phase-timeline">
+                        <div class="phase-fill bar-pending" style="left: 52%; width: 16%;"></div>
+                    </div>
+                </div>
+                
+                <div class="phase-bar">
+                    <div class="phase-label">Phase 5: Presentation Preparation (0% Complete)</div>
+                    <div class="phase-timeline">
+                        <div class="phase-fill bar-pending" style="left: 60%; width: 30%;"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Legend -->
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color bar-complete"></div>
+                    <span>Complete</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color bar-progress"></div>
+                    <span>In Progress</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color bar-pending"></div>
+                    <span>Pending</span>
+                </div>
+            </div>
+            
+            <!-- Detailed Gantt Chart - Phase 1 -->
+            <section class="gantt-section">
+                <h2 class="section-title">Phase 1: Initial Planning & Proposal</h2>
+                <p style="margin-bottom: 15px; color: #666;">Duration: 6 days (Dec 8 - Dec 13) | Status: 80% Complete</p>
+                
+                <div class="gantt-chart">
+                    <div class="gantt-header">
+                        <div class="gantt-col-task">Task Name</div>
+                        <div class="gantt-col-assignee">Assignee</div>
+                        <div class="gantt-col-timeline">Timeline</div>
+                        <div class="gantt-col-status">Status</div>
+                        <div class="gantt-col-progress">Progress</div>
+                    </div>
+                    
+                    <div class="gantt-row">
+                        <div class="gantt-col-task">Project Kickoff Meeting</div>
+                        <div class="gantt-col-assignee">Team Lead</div>
+                        <div class="gantt-col-timeline">
+                            <div class="timeline-bar-container">
+                                <div class="timeline-bar bar-complete" style="left: 0%; width: 100%;">Dec 8</div>
+                            </div>
+                        </div>
+                        <div class="gantt-col-status">✅ Complete</div>
+                        <div class="gantt-col-progress">
+                            <div class="progress-circle progress-high">100%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="gantt-row">
+                        <div class="gantt-col-task">Requirements Gathering</div>
+                        <div class="gantt-col-assignee">Member 1 & 2</div>
+                        <div class="gantt-col-timeline">
+                            <div class="timeline-bar-container">
+                                <div class="timeline-bar bar-complete" style="left: 0%; width: 50%;">Dec 8-10</div>
+                            </div>
+                        </div>
+                        <div class="gantt-col-status">✅ Complete</div>
+                        <div class="gantt-col-progress">
+                            <div class="progress-circle progress-high">100%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="gantt-row">
+                        <div class="gantt-col-task">Proposal Draft</div>
+                        <div class="gantt-col-assignee">Member 3</div>
+                        <div class="gantt-col-timeline">
+                            <div class="timeline-bar-container">
+                                <div class="timeline-bar bar-progress" style="left: 16%; width: 67%;">Dec 9-12</div>
+                            </div>
+                        </div>
+                        <div class="gantt-col-status">⏳ Progress</div>
+                        <div class="gantt-col-progress">
+                            <div class="progress-circle progress-medium">80%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="gantt-row">
+                        <div class="gantt-col-task">Proposal Review & Finalization</div>
+                        <div class="gantt-col-assignee">Team Lead</div>
+                        <div class="gantt-col-timeline">
+                            <div class="timeline-bar-container">
+                                <div class="timeline-bar bar-progress" style="left: 67%; width: 33%;">Dec 12-13</div>
+                            </div>
+                        </div>
+                        <div class="gantt-col-status">⏳ Progress</div>
+                        <div class="gantt-col-progress">
+                            <div class="progress-circle progress-medium">50%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="gantt-row">
+                        <div class="gantt-col-task">🔴 Proposal Submission</div>
+                        <div class="gantt-col-assignee">Team Lead</div>
+                        <div class="gantt-col-timeline">
+                            <div class="timeline-bar-container">
+                                <div class="timeline-bar bar-pending" style="left: 83%; width: 17%;">Dec 13</div>
+                            </div>
+                        </div>
+                        <div class="gantt-col-status">🔄 Pending</div>
+                        <div class="gantt-col-progress">
+                            <div class="progress-circle progress-low">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Team Responsibilities -->
+            <section class="team-section">
+                <h2 class="section-title">👥 Team Member Responsibilities</h2>
+                <div class="team-grid">
+                    <div class="team-card">
+                        <h3>Team Lead (Coordinator)</h3>
+                        <p><strong>Current Focus:</strong> Proposal finalization & submissions</p>
+                        <span class="workload workload-high">High Workload</span>
+                        <ul>
+                            <li>✅ Project Kickoff Meeting</li>
+                            <li>⏳ Proposal Review</li>
+                            <li>🔄 Abstract & Summary</li>
+                            <li>🔄 Final Quality Check</li>
+                            <li>🔄 Final Submission</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="team-card">
+                        <h3>Member 1 (Research & Writing)</h3>
+                        <p><strong>Current Focus:</strong> Preparing for final proofreading</p>
+                        <span class="workload workload-medium">Medium Workload</span>
+                        <ul>
+                            <li>✅ Requirements Gathering</li>
+                            <li>✅ Literature Review</li>
+                            <li>✅ Introduction Section</li>
+                            <li>🔄 References & Formatting</li>
+                            <li>🔄 Final Proofreading</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="team-card">
+                        <h3>Member 2 (Data & Development)</h3>
+                        <p><strong>Current Focus:</strong> Implementation work</p>
+                        <span class="workload workload-high">High Workload</span>
+                        <ul>
+                            <li>✅ Requirements Gathering</li>
+                            <li>✅ Data Collection</li>
+                            <li>⏳ Prototype/Implementation</li>
+                            <li>🔄 Conclusion Section</li>
+                            <li>🔄 Slide Deck Creation</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="team-card">
+                        <h3>Member 3 (Writing & Presentation)</h3>
+                        <p><strong>Current Focus:</strong> Discussion section</p>
+                        <span class="workload workload-high">High Workload</span>
+                        <ul>
+                            <li>⏳ Proposal Draft</li>
+                            <li>✅ Data Collection</li>
+                            <li>⏳ Discussion Section (50%)</li>
+                            <li>🔄 Slide Deck Creation</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="team-card">
+                        <h3>Member 4 (Methodology & Technical)</h3>
+                        <p><strong>Current Focus:</strong> Supporting implementation</p>
+                        <span class="workload workload-medium">Medium-High Workload</span>
+                        <ul>
+                            <li>✅ Methodology Development</li>
+                            <li>⏳ Prototype/Implementation</li>
+                            <li>✅ Methodology Section</li>
+                            <li>🔄 Presentation Revisions</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="team-card">
+                        <h3>Member 5 (Analysis Lead)</h3>
+                        <p><strong>Current Focus:</strong> Results & analysis section</p>
+                        <span class="workload workload-high">High Workload</span>
+                        <ul>
+                            <li>✅ Initial Analysis</li>
+                            <li>⏳ Results & Analysis (70%)</li>
+                            <li>🔄 Presentation Revisions</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Critical Path -->
+            <section style="margin: 40px 0;">
+                <h2 class="section-title">⚠️ Critical Path & Immediate Priorities</h2>
+                <div style="background: #fff3cd; padding: 20px; border-radius: 10px; border-left: 5px solid #ffc107;">
+                    <h3 style="color: #856404; margin-bottom: 15px;">🔥 URGENT - Next 48 Hours:</h3>
+                    <ol style="margin-left: 20px; line-height: 2;">
+                        <li><strong>Complete and submit proposal by Dec 13, 23:59</strong> (CRITICAL DEADLINE)</li>
+                        <li>Finish Results & Analysis section (currently 70%)</li>
+                        <li>Progress Discussion section (currently 50%)</li>
+                        <li>Complete implementation work (currently 60%)</li>
+                    </ol>
+                </div>
+                
+                <div style="background: #f8d7da; padding: 20px; border-radius: 10px; border-left: 5px solid #dc3545; margin-top: 20px;">
+                    <h3 style="color: #721c24; margin-bottom: 15px;">🚨 Critical Deadlines:</h3>
+                    <ul style="margin-left: 20px; line-height: 2;">
+                        <li><strong>December 13, 2025 @ 23:59</strong> - Proposal Submission (CANNOT BE MISSED)</li>
+                        <li><strong>January 31, 2026 @ 23:59</strong> - Final Report Submission (CANNOT BE MISSED)</li>
+                        <li><strong>February 7 or 14, 2026</strong> - Presentation Date (To Be Confirmed)</li>
+                    </ul>
+                </div>
+            </section>
+            
+            <!-- Progress Summary -->
+            <section style="margin: 40px 0;">
+                <h2 class="section-title">📊 Overall Progress Summary</h2>
+                <div style="background: #d4edda; padding: 30px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 4em; font-weight: bold; color: #155724;">75%</div>
+                    <div style="font-size: 1.5em; color: #155724; margin-top: 10px;">Project Complete</div>
+                    <div style="margin-top: 20px; color: #155724;">
+                        <p>Report is 75% complete with 25% remaining</p>
+                        <p>Focus on critical sections: Results, Discussion, and Conclusion</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</body>
+</html>
